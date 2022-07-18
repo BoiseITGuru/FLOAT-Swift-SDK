@@ -14,12 +14,13 @@ import SwiftUI
 
 public let float = FLOAT_Swift_SDK.shared
 
-public class FLOAT_Swift_SDK {
+public class FLOAT_Swift_SDK: ObservableObject {
     public static let shared = FLOAT_Swift_SDK()
     private var cancellables = Set<AnyCancellable>()
     private var floatSetup = false
-    public var groups: [FloatGroup] = []
-    public var events: [FLOATEventMetadata] = []
+    
+    @Published public var groups: [FloatGroup] = []
+    @Published public var events: [FLOATEventMetadata] = []
 
     public init() {
         fcl.$currentUser.sink { user in
