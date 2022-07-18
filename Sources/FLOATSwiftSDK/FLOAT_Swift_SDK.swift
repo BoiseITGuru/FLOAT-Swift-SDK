@@ -22,7 +22,17 @@ public class FLOAT_Swift_SDK {
     public var events: [FLOATEventMetadata] = []
 
     public init() {
-
+        fcl.$currentUser.sink { user in
+            if user != nil {
+                self.checkIsSetup()
+            }
+        }.store(in: &cancellables)
+    }
+    
+    public func checkIsSetup() {
+        Task.detached {
+            await self.floatIsSetup()
+        }
     }
 
     public func isSetup() -> Bool {
