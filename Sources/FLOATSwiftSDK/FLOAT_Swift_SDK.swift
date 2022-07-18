@@ -122,7 +122,6 @@ public class FLOAT_Swift_SDK: ObservableObject {
         print("Getting Groups")
         if fcl.currentUser != nil {
             if fcl.currentUser!.loggedIn {
-                self.groups = []
                 do {
                     let block = try await fcl.query {
                         cadence {
@@ -137,16 +136,20 @@ public class FLOAT_Swift_SDK: ObservableObject {
                             1000
                         }
                     }.decode()
+                    
                     await MainActor.run {
+                        var tempGroupArray: [FloatGroup] = []
                         // TODO: Figure out why decode not working properly for this
                         // TODO: Figure out why group events are not returning
                         if let floatGroups = block as? [String: Any] {
                             floatGroups.forEach { (_: String, value: Any) in
                                if let group = value as? [String: Any] {
-                                   self.groups.append(FloatGroup(id: group["id"] as? UInt64 ?? 0, uuid: group["uuid"] as? UInt64 ?? 0, name: group["name"] as? String ?? "", image: group["image"] as? String ?? "", description: group["description"] as? String ?? "", events: group["events"] as? [String] ?? []))
-                                }
+                                   tempGroupArray.append(FloatGroup(id: group["id"] as? UInt64 ?? 0, uuid: group["uuid"] as? UInt64 ?? 0, name: group["name"] as? String ?? "", image: group["image"] as? String ?? "", description: group["description"] as? String ?? "", events: group["events"] as? [String] ?? []))
+                               }
                             }
                         }
+
+                        self.groups = tempGroupArray
                     }
                 } catch {
                     // TODO: Error Handling
