@@ -119,7 +119,6 @@ public class FLOAT_Swift_SDK: ObservableObject {
     }
 
     public func getGroups() async {
-        print("Getting Groups")
         if fcl.currentUser != nil {
             if fcl.currentUser!.loggedIn {
                 do {
