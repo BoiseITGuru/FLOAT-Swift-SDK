@@ -25,14 +25,16 @@ public class FLOAT_Swift_SDK: ObservableObject {
     public init() {
         fcl.$currentUser.sink { user in
             if user != nil {
-                self.checkIsSetup()
+                self.loginInit()
             }
         }.store(in: &cancellables)
     }
     
-    public func checkIsSetup() {
+    public func loginInit() {
         Task.detached {
             await self.floatIsSetup()
+            await self.getGroups()
+            await self.getEvents()
         }
     }
 
