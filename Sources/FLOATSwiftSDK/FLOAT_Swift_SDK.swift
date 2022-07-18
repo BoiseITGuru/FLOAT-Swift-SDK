@@ -15,11 +15,16 @@ import SwiftUI
 public let float = FLOAT_Swift_SDK.shared
 
 public class FLOAT_Swift_SDK: ObservableObject {
+    public var objectWillChange = PassthroughSubject<Void, Never>()
     public static let shared = FLOAT_Swift_SDK()
     private var cancellables = Set<AnyCancellable>()
     private var floatSetup = false
     
-    @Published public var groups: [FloatGroup] = []
+    @Published public var groups: [FloatGroup] = [] {
+        willSet {
+            objectWillChange.send()
+        }
+    }
     @Published public var events: [FLOATEventMetadata] = []
 
     public init() {
