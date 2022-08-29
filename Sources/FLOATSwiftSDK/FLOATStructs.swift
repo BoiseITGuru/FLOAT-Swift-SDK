@@ -32,6 +32,13 @@ public struct FLOATEventMetadata: Decodable, Hashable {
 
 extension FLOATEventMetadata: Identifiable {
     public var id: UInt64 { eventId }
+    public var formatedDatedCreated: String {
+        let date = Date(timeIntervalSince1970: dateCreated)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = DateFormatter.Style.short
+        dateFormatter.timeZone = .current
+        return dateFormatter.string(from: date)
+    }
 }
 
 public struct CombinedFloatMetadata: Decodable, Hashable {
@@ -55,4 +62,14 @@ public struct FLOAT: Decodable, Hashable, Identifiable {
     public let eventName: String
     public let originalRecipient: String
     public let serial: UInt64
+}
+
+extension FLOAT {
+    public var formatedDatedReceived: String {
+        let date = Date(timeIntervalSince1970: dateReceived)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = DateFormatter.Style.short
+        dateFormatter.timeZone = .current
+        return dateFormatter.string(from: date)
+    }
 }
