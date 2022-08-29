@@ -12,7 +12,7 @@ import BigInt
 import CryptoKit
 import SwiftUI
 
-public let float = FLOAT_Swift_SDK.shared
+public let sharedFloat = FLOAT_Swift_SDK.shared
 
 public class FLOAT_Swift_SDK: ObservableObject {
     public static let shared = FLOAT_Swift_SDK()
@@ -21,6 +21,7 @@ public class FLOAT_Swift_SDK: ObservableObject {
     
     @Published public var groups: [FloatGroup] = []
     @Published public var events: [FLOATEventMetadata] = []
+    @Published public var floats: [CombinedFloatMetadata] = []
 
     public init() {
         fcl.$currentUser.sink { user in
@@ -35,6 +36,7 @@ public class FLOAT_Swift_SDK: ObservableObject {
             await self.floatIsSetup()
             await self.getGroups()
             await self.getEvents()
+            await self.getFloats()
         }
     }
 
@@ -134,21 +136,10 @@ public class FLOAT_Swift_SDK: ObservableObject {
                         gasLimit {
                             1000
                         }
-                    }.decode()
+                    }.decode([FloatGroup].self)
                     
                     await MainActor.run {
-                        var tempGroupArray: [FloatGroup] = []
-                        // TODO: Figure out why decode not working properly for this
-                        // TODO: Figure out why group events are not returning
-                        if let floatGroups = block as? [String: Any] {
-                            floatGroups.forEach { (_: String, value: Any) in
-                               if let group = value as? [String: Any] {
-                                   tempGroupArray.append(FloatGroup(id: group["id"] as? UInt64 ?? 0, uuid: group["uuid"] as? UInt64 ?? 0, name: group["name"] as? String ?? "", image: group["image"] as? String ?? "", description: group["description"] as? String ?? "", events: group["events"] as? [String] ?? []))
-                               }
-                            }
-                        }
-
-                        self.groups = tempGroupArray
+                        self.groups = block ?? []
                     }
                 } catch {
                     // TODO: Error Handling
@@ -174,11 +165,43 @@ public class FLOAT_Swift_SDK: ObservableObject {
                         gasLimit {
                             1000
                         }
-                    }.decode()
+                    }.decode([FLOATEventMetadata].self)
                     await MainActor.run {
-                        if let eventsDict = block as? [String: Any] {
-                            print(eventsDict)
+                        self.events = block ?? []
+                    }
+                } catch {
+                    // TODO: Error Handling
+                    print(error)
+                }
+            } else {
+                // TODO: Error Handling
+                print("Error - Not Logged In")
+            }
+        } else {
+            // TODO: Error Handling
+            print("Error - Not Logged In")
+        }
+    }
+    
+    public func getFloats() async {
+        if (fcl.currentUser != nil) {
+            if fcl.currentUser!.loggedIn {
+                do {
+                    let block = try await fcl.query {
+                        cadence {
+                            FloatScripts.getFloats.rawValue
                         }
+
+                        arguments {
+                            [.address(fcl.currentUser!.addr)]
+                        }
+
+                        gasLimit {
+                            1000
+                        }
+                    }.decode([CombinedFloatMetadata].self)
+                    await MainActor.run {
+                        self.floats = block ?? []
                     }
                 } catch {
                     // TODO: Error Handling

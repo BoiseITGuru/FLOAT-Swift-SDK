@@ -34,15 +34,15 @@ enum FloatScripts: String {
     case getGroups =
         """
           import FLOAT from 0xFLOAT
-          pub fun main(account: Address): {String: &FLOAT.Group} {
+          pub fun main(account: Address): [&FLOAT.Group?] {
             let floatEventCollection = getAccount(account).getCapability(FLOAT.FLOATEventsPublicPath)
                                         .borrow<&FLOAT.FLOATEvents{FLOAT.FLOATEventsPublic}>()
                                         ?? panic("Could not borrow the FLOAT Events Collection from the account.")
             let groups = floatEventCollection.getGroups()
 
-            let answer: {String: &FLOAT.Group} = {}
+            let answer: [&FLOAT.Group?] = []
             for groupName in groups {
-              answer[groupName] = floatEventCollection.getGroup(groupName: groupName)
+                answer.append(floatEventCollection.getGroup(groupName: groupName))
             }
 
             return answer
@@ -52,30 +52,30 @@ enum FloatScripts: String {
         """
           import FLOAT from 0xFLOAT
 
-          pub fun main(account: Address): {UFix64: FLOATEventMetadata} {
+          pub fun main(account: Address): [FLOATEventMetadata] {
             let floatEventCollection = getAccount(account).getCapability(FLOAT.FLOATEventsPublicPath)
                                         .borrow<&FLOAT.FLOATEvents{FLOAT.FLOATEventsPublic}>()
                                         ?? panic("Could not borrow the FLOAT Events Collection from the account.")
             let floatEvents: [UInt64] = floatEventCollection.getIDs()
-            let returnVal: {UFix64: FLOATEventMetadata} = {}
+            let returnVal: [FLOATEventMetadata] = []
             for eventId in floatEvents {
-              let event = floatEventCollection.borrowPublicEventRef(eventId: eventId) ?? panic("This event does not exist in the account")
-              let metadata = FLOATEventMetadata(
-                _claimable: event.claimable,
-                _dateCreated: event.dateCreated,
-                _description: event.description,
-                _eventId: event.eventId,
-                _extraMetadata: event.getExtraMetadata(),
-                _groups: event.getGroups(),
-                _host: event.host,
-                _image: event.image,
-                _name: event.name,
-                _totalSupply: event.totalSupply,
-                _transferrable: event.transferrable,
-                _url: event.url,
-                _verifiers: event.getVerifiers()
-              )
-              returnVal[event.dateCreated] = metadata
+                let event = floatEventCollection.borrowPublicEventRef(eventId: eventId) ?? panic("This event does not exist in the account")
+                let metadata = FLOATEventMetadata(
+                    _claimable: event.claimable,
+                    _dateCreated: event.dateCreated,
+                    _description: event.description,
+                    _eventId: event.eventId,
+                    _extraMetadata: event.getExtraMetadata(),
+                    _groups: event.getGroups(),
+                    _host: event.host,
+                    _image: event.image,
+                    _name: event.name,
+                    _totalSupply: event.totalSupply,
+                    _transferrable: event.transferrable,
+                    _url: event.url,
+                    _verifiers: event.getVerifiers()
+                )
+                returnVal.append(metadata)
             }
             return returnVal
           }
@@ -123,5 +123,42 @@ enum FloatScripts: String {
                 self.verifiers = _verifiers
             }
           }
+        """
+    case getFloats =
+        """
+        import FLOAT from 0xFLOAT
+        pub fun main(account: Address): [CombinedMetadata] {
+          let floatCollection = getAccount(account).getCapability(FLOAT.FLOATCollectionPublicPath)
+                                .borrow<&FLOAT.Collection{FLOAT.CollectionPublic}>()
+                                ?? panic("Could not borrow the Collection from the account.")
+          let ids = floatCollection.getIDs()
+          var returnVal: [CombinedMetadata] = []
+          for id in ids {
+            let nft: &FLOAT.NFT = floatCollection.borrowFLOAT(id: id)!
+            let eventId = nft.eventId
+            let eventHost = nft.eventHost
+
+            let event = nft.getEventMetadata()
+            returnVal.append(CombinedMetadata(_float: nft, _totalSupply: event?.totalSupply, _transferrable: event?.transferrable))
+          }
+
+          return returnVal
+        }
+
+        pub struct CombinedMetadata {
+            pub let float: &FLOAT.NFT
+            pub let totalSupply: UInt64?
+            pub let transferrable: Bool?
+
+            init(
+                _float: &FLOAT.NFT,
+                _totalSupply: UInt64?,
+                _transferrable: Bool?
+            ) {
+                self.float = _float
+                self.totalSupply = _totalSupply
+                self.transferrable = _transferrable
+            }
+        }
         """
 }
