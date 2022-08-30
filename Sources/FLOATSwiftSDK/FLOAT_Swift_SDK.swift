@@ -139,7 +139,9 @@ public class FLOAT_Swift_SDK: ObservableObject {
                     }.decode([FloatGroup].self)
                     
                     await MainActor.run {
-                        self.groups = block ?? []
+                        let unsortedArray = block ?? []
+                        
+                        self.groups = unsortedArray.sorted(by: { $0.id > $1.id })
                     }
                 } catch {
                     // TODO: Error Handling
@@ -167,7 +169,9 @@ public class FLOAT_Swift_SDK: ObservableObject {
                         }
                     }.decode([FLOATEventMetadata].self)
                     await MainActor.run {
-                        self.events = block ?? []
+                        let unsortedArray = block ?? []
+                        
+                        self.events = unsortedArray.sorted(by: { $0.dateCreated > $1.dateCreated })
                     }
                 } catch {
                     // TODO: Error Handling
@@ -201,7 +205,9 @@ public class FLOAT_Swift_SDK: ObservableObject {
                         }
                     }.decode([CombinedFloatMetadata].self)
                     await MainActor.run {
-                        self.floats = block ?? []
+                        let unsortedArray = block ?? []
+                        
+                        self.floats = unsortedArray.sorted(by: { $0.float.dateReceived > $1.float.dateReceived })
                     }
                 } catch {
                     // TODO: Error Handling

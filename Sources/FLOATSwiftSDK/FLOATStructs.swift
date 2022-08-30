@@ -16,7 +16,7 @@ public struct FloatGroup: Decodable, Hashable, Identifiable {
     public let events: [String: Bool]
 }
 
-public struct FLOATEventMetadata: Decodable, Hashable {
+public struct FLOATEventMetadata: Decodable, Hashable, Identifiable {
     public let claimable: Bool
     public let dateCreated: Double
     public let description: String
@@ -28,26 +28,16 @@ public struct FLOATEventMetadata: Decodable, Hashable {
     public let totalSupply: UInt64
     public let transferrable: Bool
     public let url: String
-}
-
-extension FLOATEventMetadata: Identifiable {
     public var id: UInt64 { eventId }
     public var formatedDatedCreated: String {
-        let date = Date(timeIntervalSince1970: dateCreated)
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = DateFormatter.Style.short
-        dateFormatter.timeZone = .current
-        return dateFormatter.string(from: date)
+        return formatDate(timestamp: dateCreated)
     }
 }
 
-public struct CombinedFloatMetadata: Decodable, Hashable {
+public struct CombinedFloatMetadata: Decodable, Hashable, Identifiable {
     public let float: FLOAT
     public let totalSupply: UInt64
     public let transferrable: Bool
-}
-
-extension CombinedFloatMetadata: Identifiable {
     public var id: UInt64 { float.id }
 }
 
@@ -62,14 +52,7 @@ public struct FLOAT: Decodable, Hashable, Identifiable {
     public let eventName: String
     public let originalRecipient: String
     public let serial: UInt64
-}
-
-extension FLOAT {
     public var formatedDatedReceived: String {
-        let date = Date(timeIntervalSince1970: dateReceived)
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = DateFormatter.Style.short
-        dateFormatter.timeZone = .current
-        return dateFormatter.string(from: date)
+        return formatDate(timestamp: dateReceived)
     }
 }
